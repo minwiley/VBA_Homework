@@ -1,0 +1,141 @@
+Sub alpha_testing():
+
+'declaration and start of worksheet loop, ensure this runs through all sheets
+
+Dim ws As Worksheet
+For Each ws In Worksheets
+
+    'header labels
+    'easy
+    ws.Range("k1").Value = "Ticker"
+    ws.Range("n1").Value = "Total Stock Volume"
+   
+    'mod
+    ws.Range("l1").Value = "Yearly Change"
+    ws.Range("m1").Value = "Percent Change"
+
+
+    'declare varies
+    
+    Dim lastrow As Long
+    Dim ticker_letter As String
+    Dim sumtable_row As Integer
+    Dim volume_total As Double
+    Dim yearly_change As Double
+    Dim counting As Long
+    Dim Openyr As Double
+    Dim Closeyr As Double
+    Dim percent_change As Double
+
+    counting = 2
+    sumtable_row = 2
+    volume_total = 0
+    yearly_change = 0
+
+    'lastrow - reference DW lecture last vba
+    lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    
+    'loop with the lastrow for each sheet
+    For i = 2 To lastrow
+
+        'loop through each ticker, maybe
+        volume_total = volume_total + ws.Cells(i, 7).Value
+        
+        'conditional-1
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            'ticker column
+            ticker_letter = ws.Cells(i, 1).Value
+            ws.Range("k" & sumtable_row).Value = ticker_letter
+
+            'total stock volume
+            ws.Range("n" & sumtable_row).Value = volume_total
+            volume_total = 0
+
+            'yearly change column set up
+            Openyr = ws.Range("C" & counting)
+            Closeyr = ws.Range("F" & i)
+            yearly_change = Closeyr - Openyr
+            ws.Range("l" & sumtable_row).Value = yearly_change
+
+                '%change conditional
+                If Openyr = 0 Then
+                    percent_change = 0
+
+                Else
+                    Openyr = ws.Range("C" & counting)
+                    percent_change = yearly_change / Openyr
+
+                End If
+
+        'formatting
+        ws.Range("m" & sumtable_row).Value = percent_change
+        ws.Range("m" & sumtable_row).NumberFormat = "0.000000%"
+
+                'conditional colors
+                If ws.Range("l" & sumtable_row).Value >= 0 Then
+                   ws.Range("l" & sumtable_row).Interior.ColorIndex = 4
+
+                Else
+                    ws.Range("l" & sumtable_row).Interior.ColorIndex = 3
+
+                End If
+
+           'run through
+           sumtable_row = sumtable_row + 1
+           counting = i + 1
+
+        End If
+   
+    Next i
+
+'super hard bit part3
+
+    'hard
+ws.Range("Q1").Value = "Ticker"
+ws.Range("R1").Value = "Value"
+ws.Range("P2").Value = "Greatest % Increase"
+ws.Range("P3").Value = "Greatest % Decrease"
+ws.Range("P4").Value = "Greatest TOTAL Volume"
+
+Dim GreatIncrease As Double
+Dim GreatDecrease As Double
+Dim GreatValue As Double
+Dim otherrow As Long
+
+GreatIncrease = 0
+GreatDecrease = 0
+GreatValue = 0
+
+'m = 13
+otherrow = ws.Cells(Rows.Count, 13).End(xlUp).Row
+
+'formatting
+ws.Range("r2").NumberFormat = "0.0000%"
+ws.Range("r3").NumberFormat = "0.0000%"
+
+For j = 2 To otherrow
+
+    If ws.Range("m" & j).Value > GreatIncrease Then
+        GreatIncrease = ws.Range("m" & j).Value
+        ws.Range("r2").Value = GreatIncrease
+        ws.Range("q2").Value = ws.Range("I" & j).Value
+    End If
+
+        If ws.Range("m" & j).Value < GreatDecrease Then
+            GreatDecrease = ws.Range("m" & j).Value
+            ws.Range("r3").Value = GreatDecrease
+            ws.Range("q3").Value = ws.Range("I" & j).Value
+        End If
+
+        If ws.Range("n" & j).Value > GreatValue Then
+            GreatValue = ws.Range("n" & j).Value
+            ws.Range("r4").Value = GreatValue
+            ws.Range("q4").Value = ws.Range("I" & j).Value
+        End If
+
+Next j
+
+ws.Columns.AutoFit
+Next ws
+
+End Sub
